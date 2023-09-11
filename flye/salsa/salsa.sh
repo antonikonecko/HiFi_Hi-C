@@ -1,0 +1,32 @@
+!/bin/bash
+#SBATCH --job-name=salsa2_flye
+#SBATCH --cpus-per-task=28
+#SBATCH --mem=120G
+
+aligner="flye"
+
+bam_path=~/project_data/akonecko/juicer/"$aligner"/aligned/
+bam_file=merged_dedup.bam
+from_path=~/jobs/"$aligner"/default/juicer/"$aligner"/references/
+dest_path=~/jobs/"$aligner"/default/salsa/
+fasta_file=assembly.fasta
+fai_file="$fasta_file.fai"
+
+cp -r "$bam_path/$bam_file" "$dest_path/$bam_file"
+cp -r "$from_path/$fasta_file" "$dest_path/$fasta_file"
+cp -r "$from_path/$fai_file" "$dest_path/$fai_file"
+
+./bedtools bamtobed -i "$dest_path/$bam_file" > alignment.bed
+sort -k 4 alignment.bed > tmp && mv tmp alignment.bed
+
+rm -r "$dest_path/$bam_file"
+
+# Load any necessary modules or activate environments
+CONDA_SH_PATH=~/miniconda3/etc/profile.d/conda.sh
+CONDA_ENV=salsa2_env
+CONDA_ACTIVATE_CMD=$(source "$CONDA_SH_PATH" && conda activate "$CONDA_ENV")
+
+#eval "$CONDA_ACTIVATE_CMD"
+source "$CONDA_SH_PATH"
+conda activate "$CONDA_ENV"
+
